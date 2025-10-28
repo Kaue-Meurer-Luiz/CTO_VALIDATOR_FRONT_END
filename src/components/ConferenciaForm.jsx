@@ -1,21 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Save, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Save, AlertCircle, Loader } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { conferenciasService } from '../services/api';
+import { conferenciasService, usuariosService } from '../services/api';
 import { validarConferencia } from '../lib/utils';
 import { CONFERENCIA_PADRAO, PORTA_PADRAO, STATUS_OPTIONS, MENSAGENS } from '../lib/constants';
 
 export default function ConferenciaForm({ onSuccess }) {
   const [conferencia, setConferencia] = useState(CONFERENCIA_PADRAO);
   const [loading, setLoading] = useState(false);
+  const [loadingUsuarios, setLoadingUsuarios] = useState(true);
   const [erros, setErros] = useState({});
   const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
+  const [operadores, setOperadores] = useState([]);
+  const [tecnicos, setTecnicos] = useState([]);
+
+  // Carregar usuários ao montar o componente
+  useEffect(() => {
+    carregarUsuarios();
+  }, []);
+
+  // Carregar usuários da API
+  const carregarUsuarios = async () => {
+    setLoadingUsuarios(true);
+    try {
+      const [ops, tecns] = await Promise.all([
+        usuariosService.buscarOperadores(),
+        usuariosService.buscarTecnicos()
+      ]);
+      
+      setOperadores(ops);
+      setTecnicos(tecns);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      setMensagem({ 
+        tipo: 'aviso', 
+        texto: 'Aviso: Não foi possível carregar a lista de usuários. Você pode inserir os IDs manualmente.' 
+      });
+    } finally {
+      setLoadingUsuarios(false);
+    }
+  };
 
   // Atualizar campo da conferência
   const atualizarCampo = (campo, valor) => {
@@ -94,9 +124,6 @@ export default function ConferenciaForm({ onSuccess }) {
       // Tentar enviar para a API
       await conferenciasService.criarConferencia(conferencia);
       
-      // Salvar também localmente para consultas futuras
-      //conferenciasService.salvarConferenciaLocal(conferencia);
-      
       setMensagem({ tipo: 'sucesso', texto: MENSAGENS.SUCESSO_CRIAR });
       
       // Resetar formulário
@@ -104,7 +131,9 @@ export default function ConferenciaForm({ onSuccess }) {
       
       // Chamar callback de sucesso se fornecido
       if (onSuccess) {
-        onSuccess();
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
       
     } catch (error) {
@@ -125,9 +154,21 @@ export default function ConferenciaForm({ onSuccess }) {
         </CardHeader>
         <CardContent>
           {mensagem.texto && (
-            <Alert className={`mb-6 ${mensagem.tipo === 'sucesso' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+            <Alert className={`mb-6 ${
+              mensagem.tipo === 'sucesso' 
+                ? 'border-green-200 bg-green-50' 
+                : mensagem.tipo === 'aviso'
+                ? 'border-yellow-200 bg-yellow-50'
+                : 'border-red-200 bg-red-50'
+            }`}>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className={mensagem.tipo === 'sucesso' ? 'text-green-800' : 'text-red-800'}>
+              <AlertDescription className={`${
+                mensagem.tipo === 'sucesso' 
+                  ? 'text-green-800' 
+                  : mensagem.tipo === 'aviso'
+                  ? 'text-yellow-800'
+                  : 'text-red-800'
+              }`}>
                 {mensagem.texto}
               </AlertDescription>
             </Alert>
@@ -154,7 +195,7 @@ export default function ConferenciaForm({ onSuccess }) {
                   id="cidade"
                   value={conferencia.cidade}
                   onChange={(e) => atualizarCampo('cidade', e.target.value)}
-                  placeholder="Ex: Pranchita"
+                  placeholder="Ex: Salto do Lontra"
                   className={erros.cidade ? 'border-red-500' : ''}
                 />
                 {erros.cidade && <p className="text-red-500 text-sm mt-1">{erros.cidade}</p>}
@@ -172,31 +213,68 @@ export default function ConferenciaForm({ onSuccess }) {
                 {erros.dataConferencia && <p className="text-red-500 text-sm mt-1">{erros.dataConferencia}</p>}
               </div>
 
-              <div>
-                <Label htmlFor="tecInterno_id">ID Técnico Interno *</Label>
-                <Input
-                  id="tecInterno_id"
-                  type="number"
-                  value={conferencia.tecInterno_id}
-                  onChange={(e) => atualizarCampo('tecInterno_id', parseInt(e.target.value) || '')}
-                  placeholder="Ex: 1"
-                  className={erros.tecInterno_id ? 'border-red-500' : ''}
-                />
-                {erros.tecInterno_id && <p className="text-red-500 text-sm mt-1">{erros.tecInterno_id}</p>}
-              </div>
+{/* Técnico Interno (Operador) */}
+<div>
+  <Label htmlFor="tecInterno_id">Técnico Interno (Operador) *</Label>
+  {loadingUsuarios ? (
+    <div className="flex items-center gap-2 p-2 border rounded bg-gray-50">
+      <Loader className="h-4 w-4 animate-spin" />
+      <span className="text-sm text-gray-600">Carregando operadores...</span>
+    </div>
+  ) : (
+    <Select
+  value={conferencia.idOperador || ""}
+  onValueChange={(value) => setConferencia({ ...conferencia, idOperador: value })}
+>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Selecione o técnico interno" />
+  </SelectTrigger>
+  <SelectContent>
+    {operadores.map(op => (
+      <SelectItem key={op.id} value={op.id.toString()}>
+        {op.nome}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="tecExterno_id">ID Técnico Externo *</Label>
-                <Input
-                  id="tecExterno_id"
-                  type="number"
-                  value={conferencia.tecExterno_id}
-                  onChange={(e) => atualizarCampo('tecExterno_id', parseInt(e.target.value) || '')}
-                  placeholder="Ex: 8"
-                  className={erros.tecExterno_id ? 'border-red-500' : ''}
-                />
-                {erros.tecExterno_id && <p className="text-red-500 text-sm mt-1">{erros.tecExterno_id}</p>}
-              </div>
+  )}
+  {erros.tecInterno_id && (
+    <p className="text-red-500 text-sm mt-1">{erros.tecInterno_id}</p>
+  )}
+</div>
+
+{/* Técnico Externo */}
+<div className="md:col-span-2">
+  <Label htmlFor="tecExterno_id">Técnico Externo *</Label>
+  {loadingUsuarios ? (
+    <div className="flex items-center gap-2 p-2 border rounded bg-gray-50">
+      <Loader className="h-4 w-4 animate-spin" />
+      <span className="text-sm text-gray-600">Carregando técnicos...</span>
+    </div>
+  ) : (
+    <Select
+  value={conferencia.idTecnico || ""}
+  onValueChange={(value) => setConferencia({ ...conferencia, idTecnico: value })}
+>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Selecione o técnico externo" />
+  </SelectTrigger>
+  <SelectContent>
+    {tecnicos.map(tec => (
+      <SelectItem key={tec.id} value={tec.id.toString()}>
+        {tec.nome}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+  )}
+  {erros.tecExterno_id && (
+    <p className="text-red-500 text-sm mt-1">{erros.tecExterno_id}</p>
+  )}
+</div>
+
 
               <div className="md:col-span-2">
                 <Label htmlFor="observacao">Observação</Label>
@@ -328,7 +406,7 @@ export default function ConferenciaForm({ onSuccess }) {
               </Button>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || loadingUsuarios}
                 className="flex items-center gap-2"
               >
                 <Save className="h-4 w-4" />

@@ -68,4 +68,42 @@ export const conferenciasService = {
   },
 };
 
+// Serviço de Usuários
+export const usuariosService = {
+  // Buscar todos os usuários
+  buscarTodos: async () => {
+    try {
+      const response = await api.get('/usuarios');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+      throw error;
+    }
+  },
+
+  // Buscar usuários por função (Operador ou Técnico)
+buscarPorFuncao: async (funcao) => {
+  try {
+    const usuarios = await usuariosService.buscarTodos();
+    return usuarios.filter(usuario =>
+      usuario.funcao?.toLowerCase() === funcao.toLowerCase()
+    );
+  } catch (error) {
+    console.error(`Erro ao buscar usuários com função ${funcao}:`, error);
+    return [];
+  }
+},
+
+// Buscar operadores (técnicos internos)
+buscarOperadores: async () => {
+  return usuariosService.buscarPorFuncao('Operador');
+},
+
+// Buscar técnicos (técnicos externos)
+buscarTecnicos: async () => {
+  return usuariosService.buscarPorFuncao('Técnico');
+}
+
+};
+
 export default api;
