@@ -12,7 +12,6 @@ export const STATUS_OPTIONS = [
   { value: STATUS_PORTA.ATIVO, label: 'Ativo' },
   { value: STATUS_PORTA.CANCELADO, label: 'Cancelado' },
   { value: STATUS_PORTA.MUDOU_SE, label: 'Mudou-se' },
-  { value: STATUS_PORTA.NAO_IDENTIFICADO, label: 'Não Identificado' },
   { value: STATUS_PORTA.NAO_CAIU_NGM, label: 'Não Caiu Ninguém' }
 ];
 

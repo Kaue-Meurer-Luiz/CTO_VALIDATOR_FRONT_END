@@ -121,6 +121,13 @@ export default function ConferenciaForm({ onSuccess }) {
     setMensagem({ tipo: '', texto: '' });
 
     try {
+
+
+        // DEBUG: Exibir o objeto da conferencia no console
+      //console.log('Objeto da conferencia a ser enviado:', conferencia);
+      //console.log('tecInterno_id:', conferencia.tecInterno_id, 'tipo:', typeof conferencia.tecInterno_id);
+      //console.log('tecExterno_id:', conferencia.tecExterno_id, 'tipo:', typeof conferencia.tecExterno_id);
+
       // Tentar enviar para a API
       await conferenciasService.criarConferencia(conferencia);
       
@@ -223,20 +230,28 @@ export default function ConferenciaForm({ onSuccess }) {
     </div>
   ) : (
     <Select
-  value={conferencia.idOperador || ""}
-  onValueChange={(value) => setConferencia({ ...conferencia, idOperador: value })}
->
-  <SelectTrigger className="w-full">
-    <SelectValue placeholder="Selecione o técnico interno" />
-  </SelectTrigger>
-  <SelectContent>
-    {operadores.map(op => (
-      <SelectItem key={op.id} value={op.id.toString()}>
-        {op.nome}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+      value={conferencia.tecInterno_id ? conferencia.tecInterno_id.toString() : ''}
+      onValueChange={(value) => {
+        //console.log('Selecionado tecInterno:', value);
+        const numValue = parseInt(value, 10);
+        //console.log('Convertido para número:', numValue, 'isNaN:', isNaN(numValue));
+        if (!isNaN(numValue)) {
+          //console.log('Atualizando tecInterno_id para:', numValue);
+          atualizarCampo('tecInterno_id', numValue); 
+        }
+      }}
+    >
+      <SelectTrigger className={erros.tecInterno_id ? 'border-red-500' : ''}>
+        <SelectValue placeholder="Selecione um operador" />
+      </SelectTrigger>
+      <SelectContent>
+        {operadores.map((operador) => (
+          <SelectItem key={operador.id} value={operador.id.toString()}>
+            {operador.nome} (ID: {operador.id})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
 
   )}
   {erros.tecInterno_id && (
@@ -254,20 +269,28 @@ export default function ConferenciaForm({ onSuccess }) {
     </div>
   ) : (
     <Select
-  value={conferencia.idTecnico || ""}
-  onValueChange={(value) => setConferencia({ ...conferencia, idTecnico: value })}
->
-  <SelectTrigger className="w-full">
-    <SelectValue placeholder="Selecione o técnico externo" />
-  </SelectTrigger>
-  <SelectContent>
-    {tecnicos.map(tec => (
-      <SelectItem key={tec.id} value={tec.id.toString()}>
-        {tec.nome}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+      value={conferencia.tecExterno_id ? conferencia.tecExterno_id.toString() : ''}
+      onValueChange={(value) => {
+        //console.log('Selecionado tecExterno:', value);
+        const numValue = parseInt(value, 10);
+        //console.log('Convertido para número:', numValue, 'isNaN:', isNaN(numValue));
+        if (!isNaN(numValue)) {
+          //console.log('Atualizando tecExterno_id para:', numValue);
+          atualizarCampo('tecExterno_id', numValue); 
+        }
+      }}
+    >
+      <SelectTrigger className={erros.tecExterno_id ? 'border-red-500' : ''}>
+        <SelectValue placeholder="Selecione um técnico" />
+      </SelectTrigger>
+      <SelectContent>
+        {tecnicos.map((tecnico) => (
+          <SelectItem key={tecnico.id} value={tecnico.id.toString()}>
+            {tecnico.nome} (ID: {tecnico.id})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
 
   )}
   {erros.tecExterno_id && (

@@ -10,7 +10,6 @@ import { conferenciasService } from '../services/api';
 import { formatarDataHora, formatarData, getCorStatus, filtrarConferencias, debounce } from '../lib/utils';
 import { MENSAGENS } from '../lib/constants';
 
-
 export default function ConferenciasList({ limite = null, titulo = "Conferências" }) {
   const [conferencias, setConferencias] = useState([]);
   const [conferenciasFiltradas, setConferenciasFiltradas] = useState([]);
@@ -70,6 +69,19 @@ export default function ConferenciasList({ limite = null, titulo = "Conferência
     setConferenciaSelecionada(null);
   };
 
+  // NOVO: Função para obter o nome do técnico (usa o objeto completo)
+  const obterNomeTecnico = (tecnico) => {
+    if (!tecnico) return 'N/A';
+    if (typeof tecnico === 'object' && tecnico.nome) {
+      return tecnico.nome;
+    }
+    // Fallback para exibir o ID se o nome não estiver presente, mas o ID sim
+    if (typeof tecnico === 'object' && tecnico.id) {
+      return `ID: ${tecnico.id}`;
+    }
+    return 'N/A';
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -123,7 +135,7 @@ export default function ConferenciasList({ limite = null, titulo = "Conferência
           ) : (
             <div className="space-y-4">
               {conferenciasFiltradas.map((conferencia, index) => (
-                <Card key={conferencia.id || index} className="hover:shadow-md transition-shadow">
+                <Card key={conferencia.idConferencia || index} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
@@ -141,11 +153,11 @@ export default function ConferenciasList({ limite = null, titulo = "Conferência
                         <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
-                            Téc. Interno: {conferencia.tecInterno_id}
+                            Téc. Interno: {obterNomeTecnico(conferencia.tecInterno)}
                           </span>
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
-                            Téc. Externo: {conferencia.tecExterno_id}
+                            Téc. Externo: {obterNomeTecnico(conferencia.tecExterno)}
                           </span>
                           <span>Portas: {conferencia.portas?.length || 0}</span>
                         </div>
@@ -205,6 +217,7 @@ export default function ConferenciasList({ limite = null, titulo = "Conferência
         <ConferenciaDetalhes
           conferencia={conferenciaSelecionada}
           onClose={fecharDetalhes}
+          obterNomeTecnico={obterNomeTecnico}
         />
       )}
     </div>
@@ -212,7 +225,7 @@ export default function ConferenciasList({ limite = null, titulo = "Conferência
 }
 
 // Componente para exibir detalhes da conferência
-function ConferenciaDetalhes({ conferencia, onClose }) {
+function ConferenciaDetalhes({ conferencia, onClose, obterNomeTecnico }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -245,7 +258,7 @@ function ConferenciaDetalhes({ conferencia, onClose }) {
               <div>
                 <label className="text-sm font-medium text-gray-500">Técnicos</label>
                 <p className="text-lg">
-                  Interno: {conferencia.tecInterno_id} | Externo: {conferencia.tecExterno_id}
+                  Interno: {obterNomeTecnico(conferencia.tecInterno)} | Externo: {obterNomeTecnico(conferencia.tecExterno)}
                 </p>
               </div>
               {conferencia.observacao && (

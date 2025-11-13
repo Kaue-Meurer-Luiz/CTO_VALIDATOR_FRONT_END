@@ -101,8 +101,18 @@ buscarOperadores: async () => {
 // Buscar técnicos (técnicos externos)
 buscarTecnicos: async () => {
   return usuariosService.buscarPorFuncao('Técnico');
-}
+},
 
+// Buscar usuário por ID
+  buscarPorId: async (id) => {
+    try {
+      const response = await api.get(`/usuarios/id/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erro ao buscar usuário com ID ${id}:`, error);
+      return null;
+    }
+  }
 };
 
 export default api;
