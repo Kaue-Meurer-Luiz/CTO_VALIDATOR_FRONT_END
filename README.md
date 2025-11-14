@@ -1,7 +1,8 @@
 # Sistema de Conferências - Frontend
 
 Um sistema web moderno para gestão de conferências de caixas, desenvolvido em React com interface profissional e responsiva.
-Front-End desenvolvido utilizando I.A pois principal ponto a ser praticado é o  BackEnd com Java e SpringBoot, onde limitei o uso de inteligencia Artificial para praticar algo que realmente seja de meu maior interesse, Java com SpringBoot.
+Front-End desenvolvido utilizando I.A pois principal ponto a ser praticado é o  BackEnd com Java e SpringBoot, onde limitei o uso de inteligencia Artificial para praticar algo que realmente seja de meu maior interesse.
+Futuramente como ideia do projeto é refatorar todo o front-End sem o uso de I.A conforme me houver disponibilidade.
 
 ## 🚀 Funcionalidades
 
