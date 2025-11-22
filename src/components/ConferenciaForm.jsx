@@ -192,7 +192,7 @@ export default function ConferenciaForm({ onSuccess }) {
                   id="caixa"
                   value={conferencia.caixa}
                   onChange={(e) => atualizarCampo('caixa', e.target.value)}
-                  placeholder="Ex: A0139PRA"
+                  placeholder=""
                   className={erros.caixa ? 'border-red-500' : ''}
                 />
                 {erros.caixa && <p className="text-red-500 text-sm mt-1">{erros.caixa}</p>}
@@ -204,7 +204,7 @@ export default function ConferenciaForm({ onSuccess }) {
                   id="cidade"
                   value={conferencia.cidade}
                   onChange={(e) => atualizarCampo('cidade', e.target.value)}
-                  placeholder="Ex: Salto do Lontra"
+                  placeholder=""
                   className={erros.cidade ? 'border-red-500' : ''}
                 />
                 {erros.cidade && <p className="text-red-500 text-sm mt-1">{erros.cidade}</p>}
@@ -355,7 +355,7 @@ export default function ConferenciaForm({ onSuccess }) {
                           id={`porta-${index}-cliente`}
                           value={porta.cliente}
                           onChange={(e) => atualizarPorta(index, 'cliente', e.target.value)}
-                          placeholder="Ex: 21920"
+                          placeholder=""
                         />
                       </div>
 
